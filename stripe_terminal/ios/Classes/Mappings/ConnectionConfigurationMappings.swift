@@ -25,6 +25,8 @@ extension ConnectionConfigurationApi {
             )
             .setAutoReconnectOnUnexpectedDisconnect(config.autoReconnectOnUnexpectedDisconnect)
             .setTosAcceptancePermitted(config.tosAcceptancePermitted)
+            .setOnBehalfOf(config.onBehalfOf)
+            .setMerchantDisplayName(config.merchantDisplayName)
             .build()
         case _ as UsbConnectionConfigurationApi:
             return nil

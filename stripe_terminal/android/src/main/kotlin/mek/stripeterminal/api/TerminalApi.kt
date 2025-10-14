@@ -832,6 +832,8 @@ data class TapToPayConnectionConfigurationApi(
     val autoReconnectOnUnexpectedDisconnect: Boolean,
     val locationId: String,
     val tosAcceptancePermitted: Boolean,
+    val onBehalfOf: String?,
+    val merchantDisplayName: String?,
 ): ConnectionConfigurationApi() {
     companion object {
         fun deserialize(
@@ -841,6 +843,8 @@ data class TapToPayConnectionConfigurationApi(
                 autoReconnectOnUnexpectedDisconnect = serialized[0] as Boolean,
                 locationId = serialized[1] as String,
                 tosAcceptancePermitted = serialized[2] as Boolean,
+                onBehalfOf = serialized[3] as String?,
+                merchantDisplayName = serialized[4] as String?,
             )
         }
     }
