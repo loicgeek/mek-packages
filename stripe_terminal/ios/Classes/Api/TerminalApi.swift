@@ -882,7 +882,7 @@ struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
             autoReconnectOnUnexpectedDisconnect: serialized[0] as! Bool,
             locationId: serialized[1] as! String,
             tosAcceptancePermitted: serialized[2] as! Bool,
-            onBehalfOf: serialized[3] as? String,
+            onBehalfOf: serialized[3] as? String?,
             merchantDisplayName: serialized[4] as? String?
         )
     }
