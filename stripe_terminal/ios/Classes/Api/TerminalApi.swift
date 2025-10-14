@@ -871,9 +871,9 @@ struct InternetConnectionConfigurationApi: ConnectionConfigurationApi {
 struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
     let autoReconnectOnUnexpectedDisconnect: Bool
     let locationId: String
-    let tosAcceptancePermitted: Bool
-    let onBehalfOf: String?
     let merchantDisplayName: String?
+    let onBehalfOf: String?
+    let tosAcceptancePermitted: Bool?
 
     static func deserialize(
         _ serialized: [Any?]
@@ -881,10 +881,9 @@ struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
         return TapToPayConnectionConfigurationApi(
             autoReconnectOnUnexpectedDisconnect: serialized[0] as! Bool,
             locationId: serialized[1] as! String,
-            tosAcceptancePermitted: serialized[2] as! Bool,
-            onBehalfOf: serialized[3] as? String,  // ✅ Remove the '?' after String
-            merchantDisplayName: serialized[4] as? String  // ✅ Remove the '?' after String
-        
+            merchantDisplayName: serialized[2] as? String,
+            onBehalfOf: serialized[3] as? String,
+            tosAcceptancePermitted: serialized[4] as? Bool
         )
     }
 }
