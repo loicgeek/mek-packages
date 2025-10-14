@@ -833,7 +833,7 @@ data class TapToPayConnectionConfigurationApi(
     val locationId: String,
     val merchantDisplayName: String?,
     val onBehalfOf: String?,
-    val tosAcceptancePermitted: Boolean?,
+    val tosAcceptancePermitted: Boolean,
 ): ConnectionConfigurationApi() {
     companion object {
         fun deserialize(
@@ -844,7 +844,7 @@ data class TapToPayConnectionConfigurationApi(
                 locationId = serialized[1] as String,
                 merchantDisplayName = serialized[2] as String?,
                 onBehalfOf = serialized[3] as String?,
-                tosAcceptancePermitted = serialized[4] as Boolean?,
+                tosAcceptancePermitted = serialized[4] as Boolean,
             )
         }
     }

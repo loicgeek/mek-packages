@@ -873,7 +873,7 @@ struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
     let locationId: String
     let merchantDisplayName: String?
     let onBehalfOf: String?
-    let tosAcceptancePermitted: Bool?
+    let tosAcceptancePermitted: Bool
 
     static func deserialize(
         _ serialized: [Any?]
@@ -883,7 +883,7 @@ struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
             locationId: serialized[1] as! String,
             merchantDisplayName: serialized[2] as? String,
             onBehalfOf: serialized[3] as? String,
-            tosAcceptancePermitted: serialized[4] as? Bool
+            tosAcceptancePermitted: serialized[4] as! Bool
         )
     }
 }
