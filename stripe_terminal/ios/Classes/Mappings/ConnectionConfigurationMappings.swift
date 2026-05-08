@@ -19,12 +19,13 @@ extension ConnectionConfigurationApi {
             .setFailIfInUse(config.failIfInUse)
             .build()
         case let config as TapToPayConnectionConfigurationApi:
-            return try TapToPayConnectionConfigurationBuilder(
+            let tapToPayBuilder = TapToPayConnectionConfigurationBuilder(
                 delegate: delegate,
                 locationId: config.locationId
             )
             .setAutoReconnectOnUnexpectedDisconnect(config.autoReconnectOnUnexpectedDisconnect)
-            .build()
+            if let onBehalfOf = config.onBehalfOf { tapToPayBuilder.setOnBehalfOf(onBehalfOf) }
+            return try tapToPayBuilder.build()
         case _ as UsbConnectionConfigurationApi:
             return nil
         default:

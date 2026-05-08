@@ -21,7 +21,8 @@ fun TerminalException.toApi(): TerminalExceptionApi {
         message = errorMessage,
         stackTrace = stackTraceToString(),
         paymentIntent = paymentIntent?.toApi(),
-        apiError = apiError?.toString()
+        apiError = apiError?.toString(),
+        refund = refund?.toApi()
     )
 }
 

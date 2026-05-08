@@ -151,7 +151,8 @@ protocol TerminalPlatformApi {
         _ tippingConfiguration: TippingConfigurationApi?,
         _ shouldUpdatePaymentIntent: Bool,
         _ customerCancellationEnabled: Bool,
-        _ allowRedisplay: AllowRedisplayApi
+        _ allowRedisplay: AllowRedisplayApi,
+        _ skipDonation: Bool
     ) throws
 
     func onStopCollectPaymentMethod(
@@ -244,6 +245,10 @@ protocol TerminalPlatformApi {
     func onSetTapToPayUXConfiguration(
         _ configuration: TapToPayUxConfigurationApi
     ) throws -> Void
+
+    func onIsTapToPayAccountLinked(
+        _ result: Result<Bool>
+    ) throws
 }
 
 class DiscoverReadersControllerApi {
@@ -365,7 +370,7 @@ func setTerminalPlatformApiHandler(
                 }
             case "startCollectPaymentMethod":
                 let res = Result<PaymentIntentApi>(result) { $0.serialize() }
-                try hostApi.onStartCollectPaymentMethod(res, args[0] as! Int, args[1] as! String, args[2] as! Bool, args[3] as? String, args[4] as! Bool, !(args[5] is NSNull) ? TippingConfigurationApi.deserialize(args[5] as! [Any?]) : nil, args[6] as! Bool, args[7] as! Bool, AllowRedisplayApi(rawValue: args[8] as! Int)!)
+                try hostApi.onStartCollectPaymentMethod(res, args[0] as! Int, args[1] as! String, args[2] as! Bool, args[3] as? String, args[4] as! Bool, !(args[5] is NSNull) ? TippingConfigurationApi.deserialize(args[5] as! [Any?]) : nil, args[6] as! Bool, args[7] as! Bool, AllowRedisplayApi(rawValue: args[8] as! Int)!, args[9] as! Bool)
             case "stopCollectPaymentMethod":
                 runAsync {
                     try await hostApi.onStopCollectPaymentMethod(args[0] as! Int)
@@ -444,6 +449,9 @@ func setTerminalPlatformApiHandler(
             case "setTapToPayUXConfiguration":
                 let res = try hostApi.onSetTapToPayUXConfiguration(TapToPayUxConfigurationApi.deserialize(args[0] as! [Any?]))
                 result(nil)
+            case "isTapToPayAccountLinked":
+                let res = Result<Bool>(result) { $0 }
+                try hostApi.onIsTapToPayAccountLinked(res)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -610,10 +618,31 @@ enum AllowRedisplayApi: Int {
 
 struct AmountDetailsApi {
     let tip: TipApi?
+    let surchargeDetails: SurchargeDetailsApi?
 
     func serialize() -> [Any?] {
         return [
             tip?.serialize(),
+            surchargeDetails?.serialize(),
+        ]
+    }
+}
+
+enum SurchargeStatusApi: Int {
+    case applied
+    case customerOptedOut
+    case declined
+    case error
+}
+
+struct SurchargeDetailsApi {
+    let surchargeAmount: Int
+    let status: SurchargeStatusApi
+
+    func serialize() -> [Any?] {
+        return [
+            surchargeAmount,
+            status.rawValue,
         ]
     }
 }
@@ -696,6 +725,8 @@ struct CardPresentDetailsApi {
     let last4: String?
     let networks: CardNetworksApi?
     let receipt: ReceiptDetailsApi?
+    let captureBefore: Date?
+    let reauthorizeBefore: Date?
 
     func serialize() -> [Any?] {
         return [
@@ -711,6 +742,8 @@ struct CardPresentDetailsApi {
             last4,
             networks?.serialize(),
             receipt?.serialize(),
+            captureBefore.map { Int($0.timeIntervalSince1970 * 1000) },
+            reauthorizeBefore.map { Int($0.timeIntervalSince1970 * 1000) },
         ]
     }
 }
@@ -720,6 +753,8 @@ struct CardPresentParametersApi {
     let requestExtendedAuthorization: Bool?
     let requestIncrementalAuthorizationSupport: Bool?
     let requestedPriority: CardPresentRoutingApi?
+    let requestMulticapture: Bool?
+    let requestReauthorization: Bool?
 
     static func deserialize(
         _ serialized: [Any?]
@@ -728,7 +763,9 @@ struct CardPresentParametersApi {
             captureMethod: !(serialized[0] is NSNull) ? CardPresentCaptureMethodApi(rawValue: serialized[0] as! Int)! : nil,
             requestExtendedAuthorization: serialized[1] as? Bool,
             requestIncrementalAuthorizationSupport: serialized[2] as? Bool,
-            requestedPriority: !(serialized[3] is NSNull) ? CardPresentRoutingApi(rawValue: serialized[3] as! Int)! : nil
+            requestedPriority: !(serialized[3] is NSNull) ? CardPresentRoutingApi(rawValue: serialized[3] as! Int)! : nil,
+            requestMulticapture: serialized[4] as? Bool,
+            requestReauthorization: serialized[5] as? Bool
         )
     }
 }
@@ -871,13 +908,15 @@ struct InternetConnectionConfigurationApi: ConnectionConfigurationApi {
 struct TapToPayConnectionConfigurationApi: ConnectionConfigurationApi {
     let autoReconnectOnUnexpectedDisconnect: Bool
     let locationId: String
+    let onBehalfOf: String?
 
     static func deserialize(
         _ serialized: [Any?]
     ) -> TapToPayConnectionConfigurationApi {
         return TapToPayConnectionConfigurationApi(
             autoReconnectOnUnexpectedDisconnect: serialized[0] as! Bool,
-            locationId: serialized[1] as! String
+            locationId: serialized[1] as! String,
+            onBehalfOf: serialized[2] as? String
         )
     }
 }
@@ -901,6 +940,7 @@ enum ConnectionStatusApi: Int {
     case connected
     case connecting
     case discovering
+    case reconnecting
 }
 
 enum DeviceTypeApi: Int {
@@ -1187,6 +1227,7 @@ enum PaymentIntentStatusApi: Int {
     case requiresConfirmation
     case requiresPaymentMethod
     case requiresAction
+    case requiresReauthorization
     case succeeded
 }
 
@@ -1589,10 +1630,17 @@ enum SimulatedCardTypeApi: Int {
     case offlinePinScaRetry
 }
 
+enum SimulatedOfflineModeApi: Int {
+    case none
+    case paymentIntentOffline
+    case both
+}
+
 struct SimulatorConfigurationApi {
     let simulatedCard: SimulatedCardApi
     let simulatedTipAmount: Int?
     let update: SimulateReaderUpdateApi
+    let offlineMode: SimulatedOfflineModeApi?
 
     static func deserialize(
         _ serialized: [Any?]
@@ -1600,7 +1648,8 @@ struct SimulatorConfigurationApi {
         return SimulatorConfigurationApi(
             simulatedCard: SimulatedCardApi.deserialize(serialized[0] as! [Any?]),
             simulatedTipAmount: serialized[1] as? Int,
-            update: SimulateReaderUpdateApi(rawValue: serialized[2] as! Int)!
+            update: SimulateReaderUpdateApi(rawValue: serialized[2] as! Int)!,
+            offlineMode: !(serialized[3] is NSNull) ? SimulatedOfflineModeApi(rawValue: serialized[3] as! Int)! : nil
         )
     }
 }
@@ -1684,6 +1733,7 @@ struct TerminalExceptionApi {
     let message: String
     let paymentIntent: PaymentIntentApi?
     let stackTrace: String?
+    let refund: RefundApi?
 
     func serialize() -> [Any?] {
         return [
@@ -1692,6 +1742,7 @@ struct TerminalExceptionApi {
             message,
             paymentIntent?.serialize(),
             stackTrace,
+            refund?.serialize(),
         ]
     }
 }

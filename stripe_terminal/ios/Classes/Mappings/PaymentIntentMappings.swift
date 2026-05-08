@@ -24,7 +24,7 @@ extension PaymentIntent {
             id: stripeId!,
             invoiceId: nil,
             metadata: metadata ?? [:],
-            onBehalfOf: nil,
+            onBehalfOf: onBehalfOf,
             paymentMethod: paymentMethod?.toApi(),
             paymentMethodId: paymentMethodId,
             receiptEmail: nil,
@@ -55,6 +55,8 @@ extension PaymentIntentStatus {
             return .succeeded
         case .requiresAction:
             return .requiresAction
+        case .requiresReauthorization:
+            return .requiresReauthorization
         @unknown default:
             fatalError("Not supported payment intent status: \(self)")
         }
@@ -77,8 +79,35 @@ extension CaptureMethod {
 extension SCPAmountDetails {
     func toApi() -> AmountDetailsApi {
         return AmountDetailsApi(
-            tip: tip?.toApi()
+            tip: tip?.toApi(),
+            surchargeDetails: surchargeDetails?.toApi()
         )
+    }
+}
+
+extension SCPSurchargeDetails {
+    func toApi() -> SurchargeDetailsApi {
+        return SurchargeDetailsApi(
+            surchargeAmount: Int(surchargeAmount),
+            status: status.toApi()
+        )
+    }
+}
+
+extension SCPSurchargeStatus {
+    func toApi() -> SurchargeStatusApi {
+        switch self {
+        case .applied:
+            return .applied
+        case .customerOptedOut:
+            return .customerOptedOut
+        case .declined:
+            return .declined
+        case .error:
+            return .error
+        @unknown default:
+            fatalError("SurchargeStatus \(self) not supported.")
+        }
     }
 }
 

@@ -184,6 +184,9 @@ enum PaymentIntentStatus {
   /// PaymentIntents collected with the Terminal SDK should not end in the requires_action status.
   requiresAction,
 
+  /// The [PaymentIntent] requires reauthorization before it can be captured.
+  requiresReauthorization,
+
   /// The [PaymentIntent] succeeded.
   succeeded,
 }
@@ -193,9 +196,36 @@ class AmountDetails {
   /// Details about the tip
   final Tip? tip;
 
+  /// Details about the surcharge
+  final SurchargeDetails? surchargeDetails;
+
   @internal
   const AmountDetails({
     required this.tip,
+    this.surchargeDetails,
+  });
+}
+
+/// The status of the surcharge applied to a payment.
+enum SurchargeStatus {
+  applied,
+  customerOptedOut,
+  declined,
+  error,
+}
+
+/// Details about a surcharge applied to a payment.
+class SurchargeDetails {
+  /// The surcharge amount in the currency's smallest unit.
+  final int surchargeAmount;
+
+  /// The status of the surcharge.
+  final SurchargeStatus status;
+
+  @internal
+  const SurchargeDetails({
+    required this.surchargeAmount,
+    required this.status,
   });
 }
 

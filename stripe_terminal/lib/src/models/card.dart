@@ -55,6 +55,12 @@ class CardPresentDetails with _$CardPresentDetails {
   final CardNetworks? networks;
   final ReceiptDetails? receipt;
 
+  /// The date/time before which the payment must be captured.
+  final DateTime? captureBefore;
+
+  /// The date/time before which the payment must be reauthorized.
+  final DateTime? reauthorizeBefore;
+
   const CardPresentDetails({
     required this.brand,
     required this.country,
@@ -68,6 +74,8 @@ class CardPresentDetails with _$CardPresentDetails {
     required this.incrementalAuthorizationStatus,
     required this.networks,
     required this.receipt,
+    this.captureBefore,
+    this.reauthorizeBefore,
   });
 
   bool get incrementalAuthorizationSupported =>
@@ -136,11 +144,19 @@ class CardPresentParameters with _$CardPresentParameters {
   /// Network routing priority on co-branded EMV cards supporting domestic debit and international card schemes.
   final CardPresentRouting? requestedPriority;
 
+  /// Enable multicapture for this payment.
+  final bool? requestMulticapture;
+
+  /// Request reauthorization for this payment.
+  final bool? requestReauthorization;
+
   const CardPresentParameters({
     this.captureMethod,
     this.requestExtendedAuthorization,
     this.requestIncrementalAuthorizationSupport,
     this.requestedPriority,
+    this.requestMulticapture,
+    this.requestReauthorization,
   });
 }
 

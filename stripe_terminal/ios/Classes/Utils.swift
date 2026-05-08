@@ -6,6 +6,7 @@ func createApiException(_ code: TerminalExceptionCodeApi, _ message: String? = n
         code: code,
         message: message ?? "",
         paymentIntent: nil,
-        stackTrace: nil
+        stackTrace: nil,
+        refund: nil
     )
 }

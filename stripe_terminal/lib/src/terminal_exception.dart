@@ -1,4 +1,5 @@
 import 'package:mek_stripe_terminal/src/models/payment_intent.dart';
+import 'package:mek_stripe_terminal/src/models/refund.dart';
 import 'package:one_for_all/one_for_all.dart';
 
 /// Android exception codes: https://stripe.dev/stripe-terminal-android/external/com.stripe.stripeterminal.external.models/-terminal-exception/-terminal-error-code/index.html
@@ -600,12 +601,16 @@ class TerminalException implements Exception {
   final PaymentIntent? paymentIntent;
   final Object? apiError;
 
+  /// The declined [Refund] returned when [Terminal.confirmRefund] fails.
+  final Refund? refund;
+
   TerminalException({
     required this.code,
     required String message,
     required this.stackTrace,
     required this.paymentIntent,
     required this.apiError,
+    required this.refund,
   }) : message = (message.isEmpty ? code.message : message) ?? '';
 
   @override
@@ -613,6 +618,7 @@ class TerminalException implements Exception {
         'TerminalException: ${code.name}',
         message,
         if (paymentIntent != null) paymentIntent,
+        if (refund != null) refund,
         if (apiError != null) apiError,
         if (stackTrace != null) stackTrace,
       ].join('\n');

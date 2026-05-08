@@ -2,6 +2,8 @@ package mek.stripeterminal.mappings
 
 import com.stripe.stripeterminal.external.models.AmountDetails
 import com.stripe.stripeterminal.external.models.CaptureMethod
+import com.stripe.stripeterminal.external.models.SurchargeDetails
+import com.stripe.stripeterminal.external.models.SurchargeStatus
 import com.stripe.stripeterminal.external.models.PaymentIntent
 import com.stripe.stripeterminal.external.models.PaymentIntentParameters
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus
@@ -10,6 +12,8 @@ import com.stripe.stripeterminal.external.models.PaymentMethodType
 import com.stripe.stripeterminal.external.models.PaymentStatus
 import mek.stripeterminal.api.AmountDetailsApi
 import mek.stripeterminal.api.CaptureMethodApi
+import mek.stripeterminal.api.SurchargeDetailsApi
+import mek.stripeterminal.api.SurchargeStatusApi
 import mek.stripeterminal.api.ConfirmationMethodApi
 import mek.stripeterminal.api.PaymentIntentApi
 import mek.stripeterminal.api.PaymentIntentParametersApi
@@ -80,12 +84,26 @@ fun PaymentIntentStatus.toApi(): PaymentIntentStatusApi {
         PaymentIntentStatus.REQUIRES_PAYMENT_METHOD -> PaymentIntentStatusApi.REQUIRES_PAYMENT_METHOD
         PaymentIntentStatus.SUCCEEDED -> PaymentIntentStatusApi.SUCCEEDED
         PaymentIntentStatus.REQUIRES_ACTION -> PaymentIntentStatusApi.REQUIRES_ACTION
+        PaymentIntentStatus.REQUIRES_REAUTHORIZATION -> PaymentIntentStatusApi.REQUIRES_REAUTHORIZATION
     }
 }
 
 fun AmountDetails.toApi(): AmountDetailsApi {
     return AmountDetailsApi(
-        tip = tip?.toApi()
+        tip = tip?.toApi(),
+        surchargeDetails = surchargeDetails?.toApi()
+    )
+}
+
+fun SurchargeDetails.toApi(): SurchargeDetailsApi {
+    return SurchargeDetailsApi(
+        surchargeAmount = surchargeAmount,
+        status = when (status) {
+            SurchargeStatus.APPLIED -> SurchargeStatusApi.APPLIED
+            SurchargeStatus.CUSTOMER_OPTED_OUT -> SurchargeStatusApi.CUSTOMER_OPTED_OUT
+            SurchargeStatus.DECLINED -> SurchargeStatusApi.DECLINED
+            SurchargeStatus.ERROR -> SurchargeStatusApi.ERROR
+        }
     )
 }
 

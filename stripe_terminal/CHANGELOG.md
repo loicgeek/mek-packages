@@ -1,5 +1,24 @@
 
-# 4.6.0
+# 5.5.0
+- feat: bumped Android and iOS SDK versions to `5.5.0`
+- build(ios): increased minimum iOS deployment target from `14.0` to `15.0`
+- feat: added `ConnectionStatus.reconnecting` to reflect the new SDK reconnection state
+- fix(android): updated `Terminal.initTerminal` to `Terminal.init` (SDK 5.0 rename)
+- fix(android): renamed `CollectConfiguration` → `CollectPaymentIntentConfiguration`, `SetupIntentConfiguration` → `CollectSetupIntentConfiguration`, `RefundConfiguration` → `CollectRefundConfiguration` (SDK 5.0 renames)
+- fix(ios): updated Terminal initialization from `setTokenProvider` to `initWithTokenProvider` (SDK 5.0 change)
+- fix(android): `HandoffConnectionConfiguration` is no longer bundled in core; attempting to use it now throws an error directing to add the `stripterminal-appsondevices` dependency
+- feat: added `CardPresentParameters.requestMulticapture` parameter (SDK 5.4)
+- feat: added `CardPresentDetails.captureBefore` field (SDK 5.4)
+- feat: added `skipDonation` parameter to `Terminal.collectPaymentMethod` (SDK 5.4)
+- feat: added `SurchargeDetails` and `SurchargeStatus` classes; `AmountDetails.surchargeDetails` field (SDK 5.5)
+- feat: added `SimulatedOfflineMode` enum and `SimulatorConfiguration.offlineMode` field (SDK 5.5)
+- feat(ios): added `Terminal.isTapToPayAccountLinked()` method (SDK 5.5, iOS only)
+- feat: added `PaymentIntentStatus.requiresReauthorization` enum value (SDK 5.4)
+- feat: added `CardPresentDetails.reauthorizeBefore` field (SDK 5.4)
+- feat: added `CardPresentParameters.requestReauthorization` parameter (SDK 5.4)
+- feat: added `TerminalException.refund` field — carries the declined `Refund` when `confirmRefund` fails (SDK 5.4)
+
+## 4.6.0
 - feat: bumped android and ios sdk version to `4.6.0`
 
 ## 4.4.1

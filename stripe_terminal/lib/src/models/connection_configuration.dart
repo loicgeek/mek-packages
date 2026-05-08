@@ -46,6 +46,7 @@ class InternetConnectionConfiguration extends ConnectionConfiguration {
 class TapToPayConnectionConfiguration extends ConnectionConfiguration {
   final String locationId;
   final bool autoReconnectOnUnexpectedDisconnect;
+  final String? onBehalfOf;
   @override
   @SerializableParam.ignore()
   final TapToPayReaderDelegate? readerDelegate;
@@ -53,6 +54,7 @@ class TapToPayConnectionConfiguration extends ConnectionConfiguration {
   const TapToPayConnectionConfiguration({
     required this.locationId,
     this.autoReconnectOnUnexpectedDisconnect = true,
+    this.onBehalfOf,
     required this.readerDelegate,
   });
 }

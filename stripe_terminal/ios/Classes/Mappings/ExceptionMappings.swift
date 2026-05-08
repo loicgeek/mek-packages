@@ -8,22 +8,23 @@ extension TerminalExceptionApi {
 }
 
 extension NSError {
-    func toPlatformError(apiError: Error? = nil, paymentIntent: PaymentIntent? = nil) -> PlatformError {
+    func toPlatformError(apiError: Error? = nil, paymentIntent: PaymentIntent? = nil, refund: Refund? = nil) -> PlatformError {
         if (self.domain != "com.stripe-terminal") {
             return PlatformError("\(self.domain):\(self.code)", self.localizedDescription, "\(self)")
         }
-        let apiException = toApi(apiError: apiError, paymentIntent: paymentIntent)
+        let apiException = toApi(apiError: apiError, paymentIntent: paymentIntent, refund: refund)
         return apiException.toPlatformError()
     }
-    
-    func toApi(apiError: Error? = nil, paymentIntent: PaymentIntent? = nil) -> TerminalExceptionApi {
+
+    func toApi(apiError: Error? = nil, paymentIntent: PaymentIntent? = nil, refund: Refund? = nil) -> TerminalExceptionApi {
         let code = self.toApiCode();
         return TerminalExceptionApi(
             apiError: apiError?.localizedDescription,
             code: code ?? TerminalExceptionCodeApi.unknown,
             message: localizedDescription,
             paymentIntent: paymentIntent?.toApi(),
-            stackTrace: nil
+            stackTrace: nil,
+            refund: refund?.toApi()
         )
     }
     

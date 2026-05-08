@@ -21,6 +21,7 @@ fun createApiError(code: TerminalExceptionCodeApi, message: String? = null): Ter
         message = message ?: "",
         stackTrace = null,
         paymentIntent = null,
-        apiError = null
+        apiError = null,
+        refund = null
     )
 }

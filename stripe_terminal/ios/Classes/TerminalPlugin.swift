@@ -24,7 +24,7 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
     }
     
     public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
-        if (Terminal.hasTokenProvider()) { self._clean() }
+        if (Terminal.isInitialized()) { self._clean() }
         
         self._discoverReadersController.removeHandler()
         removeTerminalPlatformApiHandler()
@@ -32,15 +32,14 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
     
     func onInit(_ shouldPrintLogs: Bool) async throws {
         // If a hot restart is performed in flutter the terminal is already initialized but we need to clean it up
-        if Terminal.hasTokenProvider() {
+        if Terminal.isInitialized() {
             _clean()
             return
         }
-        
+
         let delegate = TerminalDelegatePlugin(handlers)
-        Terminal.setTokenProvider(delegate)
-        Terminal.shared.delegate = delegate
         if (shouldPrintLogs) { Terminal.setLogListener { message in print(message) } }
+        Terminal.initWithTokenProvider(delegate, delegate: delegate)
     }
     
     func onClearCachedCredentials() throws {
@@ -159,6 +158,9 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
         Terminal.shared.simulatorConfiguration.availableReaderUpdate = configuration.update.toHost()
         Terminal.shared.simulatorConfiguration.simulatedCard = configuration.simulatedCard.toHost()
         Terminal.shared.simulatorConfiguration.simulatedTipAmount = configuration.simulatedTipAmount?.nsNumberValue
+        if let offlineMode = configuration.offlineMode {
+            Terminal.shared.simulatorConfiguration.offlineMode = offlineMode.toHost()
+        }
     }
     
 // MARK: - Taking payments
@@ -203,7 +205,8 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
         _ tippingConfiguration: TippingConfigurationApi?,
         _ shouldUpdatePaymentIntent: Bool,
         _ customerCancellationEnabled: Bool,
-        _ allowRedisplay: AllowRedisplayApi
+        _ allowRedisplay: AllowRedisplayApi,
+        _ skipDonation: Bool
     ) throws {
         let paymentIntent = try _findPaymentIntent(paymentIntentId)
         let config = CollectConfigurationBuilder()
@@ -214,6 +217,7 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
             .setUpdatePaymentIntent(shouldUpdatePaymentIntent)
             .setEnableCustomerCancellation(customerCancellationEnabled)
             .setAllowRedisplay(allowRedisplay.toHost())
+            .setSkipDonation(skipDonation)
             
         self._cancelablesCollectPaymentMethod[operationId] = Terminal.shared.collectPaymentMethod(
             paymentIntent,
@@ -413,11 +417,11 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
         _confirmRefundCancelables[operationId] = Terminal.shared.confirmRefund(completion: { refund, error in
             self._confirmRefundCancelables.removeValue(forKey: operationId)
             if let error = error {
-                result.error(error.toPlatformError())
+                result.error(error.toPlatformError(refund: refund))
                 return
             }
             result.success(refund!.toApi())
-    })
+        })
     }
     
     func onStopConfirmRefund(_ operationId: Int) async throws {
@@ -449,7 +453,17 @@ public class TerminalPlugin: NSObject, FlutterPlugin, TerminalPlatformApi {
     func onSetTapToPayUXConfiguration(_ configuration: TapToPayUxConfigurationApi) throws {
         throw PlatformError("mek_stripe_terminal", "setTapToPayUXConfiguration method not supported on ios device");
     }
-    
+
+    func onIsTapToPayAccountLinked(_ result: Result<Bool>) throws {
+        Terminal.shared.isTapToPayAccountLinked { linked, error in
+            if let error = error as? NSError {
+                result.error(error.toPlatformError())
+                return
+            }
+            result.success(linked)
+        }
+    }
+
 // MARK: - PRIVATE METHODS
     
     private func _clean() {

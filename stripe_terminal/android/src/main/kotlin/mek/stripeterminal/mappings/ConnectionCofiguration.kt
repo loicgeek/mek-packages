@@ -7,6 +7,7 @@ import mek.stripeterminal.api.HandoffConnectionConfigurationApi
 import mek.stripeterminal.api.InternetConnectionConfigurationApi
 import mek.stripeterminal.api.TapToPayConnectionConfigurationApi
 import mek.stripeterminal.api.UsbConnectionConfigurationApi
+import mek.stripeterminal.api.PlatformError
 import mek.stripeterminal.plugin.ReaderDelegatePlugin
 
 fun ConnectionConfigurationApi.toHost(readerDelegate: ReaderDelegatePlugin): ConnectionConfiguration {
@@ -24,8 +25,9 @@ fun ConnectionConfigurationApi.toHost(readerDelegate: ReaderDelegatePlugin): Con
 //            shouldActivateWithExpandedLocation = shouldActivateWithExpandedLocation,
 //            shouldGenerateOfflineSessionToken = shouldGenerateOfflineSessionToken,
 //        )
-        is HandoffConnectionConfigurationApi -> ConnectionConfiguration.HandoffConnectionConfiguration(
-            handoffReaderListener = readerDelegate,
+        is HandoffConnectionConfigurationApi -> throw PlatformError(
+            "mek_stripe_terminal",
+            "HandoffConnectionConfiguration is not supported. Add com.stripe:stripterminal-appsondevices to your dependencies."
         )
         is InternetConnectionConfigurationApi -> ConnectionConfiguration.InternetConnectionConfiguration(
             failIfInUse = failIfInUse,
@@ -34,7 +36,8 @@ fun ConnectionConfigurationApi.toHost(readerDelegate: ReaderDelegatePlugin): Con
         is TapToPayConnectionConfigurationApi -> ConnectionConfiguration.TapToPayConnectionConfiguration(
             locationId = locationId,
             autoReconnectOnUnexpectedDisconnect = autoReconnectOnUnexpectedDisconnect,
-            tapToPayReaderListener = readerDelegate
+            tapToPayReaderListener = readerDelegate,
+            onBehalfOf = onBehalfOf
         )
         is UsbConnectionConfigurationApi -> ConnectionConfiguration.UsbConnectionConfiguration(
             locationId = locationId,

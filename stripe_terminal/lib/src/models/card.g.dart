@@ -60,7 +60,9 @@ mixin _$CardPresentDetails {
           _self.generatedCard == other.generatedCard &&
           _self.incrementalAuthorizationStatus == other.incrementalAuthorizationStatus &&
           _self.networks == other.networks &&
-          _self.receipt == other.receipt;
+          _self.receipt == other.receipt &&
+          _self.captureBefore == other.captureBefore &&
+          _self.reauthorizeBefore == other.reauthorizeBefore;
   @override
   int get hashCode {
     var hashCode = 0;
@@ -76,6 +78,8 @@ mixin _$CardPresentDetails {
     hashCode = $hashCombine(hashCode, _self.incrementalAuthorizationStatus.hashCode);
     hashCode = $hashCombine(hashCode, _self.networks.hashCode);
     hashCode = $hashCombine(hashCode, _self.receipt.hashCode);
+    hashCode = $hashCombine(hashCode, _self.captureBefore.hashCode);
+    hashCode = $hashCombine(hashCode, _self.reauthorizeBefore.hashCode);
     return $hashFinish(hashCode);
   }
 
@@ -92,7 +96,9 @@ mixin _$CardPresentDetails {
         ..add('generatedCard', _self.generatedCard)
         ..add('incrementalAuthorizationStatus', _self.incrementalAuthorizationStatus)
         ..add('networks', _self.networks)
-        ..add('receipt', _self.receipt))
+        ..add('receipt', _self.receipt)
+        ..add('captureBefore', _self.captureBefore)
+        ..add('reauthorizeBefore', _self.reauthorizeBefore))
       .toString();
 }
 
@@ -173,7 +179,9 @@ mixin _$CardPresentParameters {
           _self.requestExtendedAuthorization == other.requestExtendedAuthorization &&
           _self.requestIncrementalAuthorizationSupport ==
               other.requestIncrementalAuthorizationSupport &&
-          _self.requestedPriority == other.requestedPriority;
+          _self.requestedPriority == other.requestedPriority &&
+          _self.requestMulticapture == other.requestMulticapture &&
+          _self.requestReauthorization == other.requestReauthorization;
   @override
   int get hashCode {
     var hashCode = 0;
@@ -181,6 +189,8 @@ mixin _$CardPresentParameters {
     hashCode = $hashCombine(hashCode, _self.requestExtendedAuthorization.hashCode);
     hashCode = $hashCombine(hashCode, _self.requestIncrementalAuthorizationSupport.hashCode);
     hashCode = $hashCombine(hashCode, _self.requestedPriority.hashCode);
+    hashCode = $hashCombine(hashCode, _self.requestMulticapture.hashCode);
+    hashCode = $hashCombine(hashCode, _self.requestReauthorization.hashCode);
     return $hashFinish(hashCode);
   }
 
@@ -190,6 +200,8 @@ mixin _$CardPresentParameters {
         ..add('requestExtendedAuthorization', _self.requestExtendedAuthorization)
         ..add(
             'requestIncrementalAuthorizationSupport', _self.requestIncrementalAuthorizationSupport)
-        ..add('requestedPriority', _self.requestedPriority))
+        ..add('requestedPriority', _self.requestedPriority)
+        ..add('requestMulticapture', _self.requestMulticapture)
+        ..add('requestReauthorization', _self.requestReauthorization))
       .toString();
 }

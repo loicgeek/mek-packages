@@ -75,7 +75,9 @@ extension CardPresentDetails {
             incrementalAuthorizationStatus: incrementalAuthorizationStatus.toApi(),
             last4: last4,
             networks: networks?.toApi(),
-            receipt: receipt?.toApi()
+            receipt: receipt?.toApi(),
+            captureBefore: captureBefore,
+            reauthorizeBefore: reauthorizeBefore
         )
     }
 }
@@ -128,6 +130,8 @@ extension CardPresentParametersApi {
         if let it = requestedPriority { b.setRequestedPriority(it.toHost()) }
         if let it = requestExtendedAuthorization { b.setRequestExtendedAuthorization(it) }
         if let it = requestIncrementalAuthorizationSupport { b.setRequestIncrementalAuthorizationSupport(it) }
+        if let it = requestMulticapture { b.setRequestMulticapture(it) }
+        if let it = requestReauthorization { b.setRequestReauthorization(it) }
         return try b.build()
     }
 }

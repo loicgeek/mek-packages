@@ -13,10 +13,10 @@ more simply by supporting streams instead of callbacks for listeners
 
 All features of android and ios sdk are supported (Also the TapToPay feature)
 
-- [Android sdk](https://github.com/stripe/stripe-terminal-android) version: 4.6.0
-- [IOS sdk](https://github.com/stripe/stripe-terminal-ios) version: 4.6.0
+- [Android sdk](https://github.com/stripe/stripe-terminal-android) version: 5.5.0
+- [IOS sdk](https://github.com/stripe/stripe-terminal-ios) version: 5.5.0
 
-> Offline mode is not supported
+> Simulated offline mode is supported via `SimulatorConfiguration.offlineMode`
 
 # Installation
 
@@ -49,13 +49,13 @@ android {
 
 ## iOS
 
+> Requires iOS 15.0 or later.
+
 You need to provide permission request strings to your `Info.plist` file. A sample content can be
 
 ```
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location access is required in order to accept payments.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth access is required in order to connect to supported bluetooth card readers.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>This app uses Bluetooth to connect to supported card readers.</string>
 ```
