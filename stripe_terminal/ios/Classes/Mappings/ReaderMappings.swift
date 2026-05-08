@@ -365,6 +365,8 @@ extension ConnectionStatus {
             return .connecting
         case .connected:
             return .connected
+        case .reconnecting:
+            return .reconnecting
         @unknown default:
             fatalError("WTF")
         }

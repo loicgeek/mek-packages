@@ -8,6 +8,19 @@
 import Foundation
 import StripeTerminal
 
+extension SimulatedOfflineModeApi {
+    func toHost() -> SimulatedOfflineMode {
+        switch self {
+        case .none:
+            return .none
+        case .paymentIntentOffline:
+            return .paymentIntentOffline
+        case .both:
+            return .both
+        }
+    }
+}
+
 extension SimulateReaderUpdateApi {
     func toHost() -> SimulateReaderUpdate {
         switch self {

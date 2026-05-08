@@ -11,18 +11,18 @@ import com.stripe.stripeterminal.external.callable.ReaderCallback
 import com.stripe.stripeterminal.external.callable.RefundCallback
 import com.stripe.stripeterminal.external.callable.SetupIntentCallback
 import com.stripe.stripeterminal.external.models.AllowRedisplay
-import com.stripe.stripeterminal.external.models.CollectConfiguration
+import com.stripe.stripeterminal.external.models.CollectPaymentIntentConfiguration
 import com.stripe.stripeterminal.external.models.DeviceType
 import com.stripe.stripeterminal.external.models.ListLocationsParameters
 import com.stripe.stripeterminal.external.models.Location
 import com.stripe.stripeterminal.external.models.PaymentIntent
 import com.stripe.stripeterminal.external.models.Reader
 import com.stripe.stripeterminal.external.models.Refund
-import com.stripe.stripeterminal.external.models.RefundConfiguration
+import com.stripe.stripeterminal.external.models.CollectRefundConfiguration
 import com.stripe.stripeterminal.external.models.RefundParameters
 import com.stripe.stripeterminal.external.models.SetupIntent
 import com.stripe.stripeterminal.external.models.SetupIntentCancellationParameters
-import com.stripe.stripeterminal.external.models.SetupIntentConfiguration
+import com.stripe.stripeterminal.external.models.CollectSetupIntentConfiguration
 import com.stripe.stripeterminal.external.models.SetupIntentParameters
 import com.stripe.stripeterminal.external.models.TerminalException
 import com.stripe.stripeterminal.log.LogLevel
@@ -30,6 +30,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import mek.stripeterminal.api.AllowRedisplayApi
+import mek.stripeterminal.api.PlatformError
 import mek.stripeterminal.api.CartApi
 import mek.stripeterminal.api.ConnectionConfigurationApi
 import mek.stripeterminal.api.ConnectionStatusApi
@@ -113,7 +114,7 @@ class TerminalPlatformPlugin(
         }
 
         val delegate = TerminalDelegatePlugin(handlers)
-        Terminal.initTerminal(
+        Terminal.init(
             applicationContext,
             if (shouldPrintLogs) LogLevel.VERBOSE else LogLevel.NONE,
             delegate,
@@ -266,11 +267,12 @@ class TerminalPlatformPlugin(
         tippingConfiguration: TippingConfigurationApi?,
         shouldUpdatePaymentIntent: Boolean,
         customerCancellationEnabled: Boolean,
-        allowRedisplay: AllowRedisplayApi
+        allowRedisplay: AllowRedisplayApi,
+        skipDonation: Boolean,
     ) {
         val paymentIntent = findPaymentIntent(paymentIntentId)
         val config =
-            CollectConfiguration.Builder()
+            CollectPaymentIntentConfiguration.Builder()
                 .setSurchargeNotice(surchargeNotice)
                 .setRequestDynamicCurrencyConversion(requestDynamicCurrencyConversion)
                 .skipTipping(skipTipping)
@@ -278,6 +280,7 @@ class TerminalPlatformPlugin(
                 .updatePaymentIntent(shouldUpdatePaymentIntent)
                 .setEnableCustomerCancellation(customerCancellationEnabled)
                 .setAllowRedisplay(allowRedisplay.toHost())
+                .setSkipDonation(skipDonation)
 
         cancelablesCollectPaymentMethod[operationId] =
             terminal.collectPaymentMethod(
@@ -409,7 +412,7 @@ class TerminalPlatformPlugin(
     ) {
         val setupIntent = findSetupIntent(setupIntentId)
         val config =
-            SetupIntentConfiguration.Builder()
+            CollectSetupIntentConfiguration.Builder()
                 .setEnableCustomerCancellation(customerCancellationEnabled)
 
 
@@ -500,7 +503,7 @@ class TerminalPlatformPlugin(
         customerCancellationEnabled: Boolean
     ) {
         val config =
-            RefundConfiguration.Builder().setEnableCustomerCancellation(customerCancellationEnabled)
+            CollectRefundConfiguration.Builder().setEnableCustomerCancellation(customerCancellationEnabled)
 
         cancelablesCollectRefundPaymentMethod[operationId] =
             terminal.collectRefundPaymentMethod(
@@ -589,6 +592,10 @@ class TerminalPlatformPlugin(
 
     override fun onSetTapToPayUXConfiguration(configuration: TapToPayUxConfigurationApi) {
         terminal.setTapToPayUxConfiguration(configuration.toHost());
+    }
+
+    override fun onIsTapToPayAccountLinked(result: Result<Boolean>) {
+        result.error(PlatformError("mek_stripe_terminal", "isTapToPayAccountLinked is only supported on iOS"))
     }
     // endregion
 

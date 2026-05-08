@@ -3,18 +3,29 @@ package mek.stripeterminal.mappings
 import com.stripe.stripeterminal.external.models.SimulateReaderUpdate
 import com.stripe.stripeterminal.external.models.SimulatedCard
 import com.stripe.stripeterminal.external.models.SimulatedCardType
+import com.stripe.stripeterminal.external.models.SimulatedOfflineMode
 import com.stripe.stripeterminal.external.models.SimulatorConfiguration
 import mek.stripeterminal.api.SimulateReaderUpdateApi
 import mek.stripeterminal.api.SimulatedCardApi
 import mek.stripeterminal.api.SimulatedCardTypeApi
+import mek.stripeterminal.api.SimulatedOfflineModeApi
 import mek.stripeterminal.api.SimulatorConfigurationApi
 
 fun SimulatorConfigurationApi.toHost(): SimulatorConfiguration {
     return SimulatorConfiguration(
         update = update.toHost(),
         simulatedCard = simulatedCard.toHost(),
-        simulatedTipAmount = simulatedTipAmount
+        simulatedTipAmount = simulatedTipAmount,
+        offlineMode = offlineMode?.toHost()
     )
+}
+
+fun SimulatedOfflineModeApi.toHost(): SimulatedOfflineMode {
+    return when (this) {
+        SimulatedOfflineModeApi.NONE -> SimulatedOfflineMode.NONE
+        SimulatedOfflineModeApi.PAYMENT_INTENT_OFFLINE -> SimulatedOfflineMode.PAYMENT_INTENT_OFFLINE
+        SimulatedOfflineModeApi.BOTH -> SimulatedOfflineMode.BOTH
+    }
 }
 
 fun SimulateReaderUpdateApi.toHost(): SimulateReaderUpdate {

@@ -68,7 +68,9 @@ fun CardPresentDetails.toApi(): CardPresentDetailsApi {
         receipt = receiptDetails?.toApi(),
         emvAuthData = emvAuthData,
         networks = networks?.toApi(),
-        incrementalAuthorizationStatus = incrementalAuthorizationStatus.toApi()
+        incrementalAuthorizationStatus = incrementalAuthorizationStatus.toApi(),
+        captureBefore = captureBefore?.time,
+        reauthorizeBefore = reauthorizeBefore?.time
     )
 }
 
@@ -109,6 +111,8 @@ fun CardPresentParametersApi.toHost(): CardPresentParameters {
     requestExtendedAuthorization?.let { b.setRequestExtendedAuthorization(it) }
     requestIncrementalAuthorizationSupport?.let { b.setRequestIncrementalAuthorizationSupport(it) }
     requestedPriority?.let { b.setRouting(CardPresentRoutingOptionParameters(it.toHost())) }
+    requestMulticapture?.let { b.setRequestMulticapture(it) }
+    requestReauthorization?.let { b.setRequestReauthorization(it) }
     return b.build()
 }
 

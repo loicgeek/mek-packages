@@ -218,6 +218,7 @@ class _$TerminalPlatform implements TerminalPlatform {
     required bool shouldUpdatePaymentIntent,
     required bool customerCancellationEnabled,
     required AllowRedisplay allowRedisplay,
+    required bool skipDonation,
   }) async {
     try {
       final result = await _$channel.invokeMethod('startCollectPaymentMethod', [
@@ -229,7 +230,8 @@ class _$TerminalPlatform implements TerminalPlatform {
         tippingConfiguration != null ? _$serializeTippingConfiguration(tippingConfiguration) : null,
         shouldUpdatePaymentIntent,
         customerCancellationEnabled,
-        allowRedisplay.index
+        allowRedisplay.index,
+        skipDonation,
       ]);
       return _$deserializePaymentIntent(result as List);
     } on PlatformException catch (exception) {
@@ -470,6 +472,17 @@ class _$TerminalPlatform implements TerminalPlatform {
       rethrow;
     }
   }
+
+  @override
+  Future<bool> isTapToPayAccountLinked() async {
+    try {
+      final result = await _$channel.invokeMethod('isTapToPayAccountLinked', []);
+      return result as bool;
+    } on PlatformException catch (exception) {
+      TerminalPlatform._throwIfIsHostException(exception);
+      rethrow;
+    }
+  }
 }
 
 void _$setupTerminalHandlers(TerminalHandlers hostApi) {
@@ -519,8 +532,12 @@ Address _$deserializeAddress(List<Object?> serialized) => Address(
     line2: serialized[3] as String?,
     postalCode: serialized[4] as String?,
     state: serialized[5] as String?);
-AmountDetails _$deserializeAmountDetails(List<Object?> serialized) =>
-    AmountDetails(tip: serialized[0] != null ? _$deserializeTip(serialized[0] as List) : null);
+AmountDetails _$deserializeAmountDetails(List<Object?> serialized) => AmountDetails(
+    tip: serialized[0] != null ? _$deserializeTip(serialized[0] as List) : null,
+    surchargeDetails:
+        serialized[1] != null ? _$deserializeSurchargeDetails(serialized[1] as List) : null);
+SurchargeDetails _$deserializeSurchargeDetails(List<Object?> serialized) => SurchargeDetails(
+    surchargeAmount: serialized[0] as int, status: SurchargeStatus.values[serialized[1] as int]);
 CardDetails _$deserializeCardDetails(List<Object?> serialized) => CardDetails(
     brand: serialized[0] != null ? CardBrand.values[serialized[0] as int] : null,
     country: serialized[1] as String?,
@@ -544,12 +561,18 @@ CardPresentDetails _$deserializeCardPresentDetails(List<Object?> serialized) => 
         serialized[8] != null ? IncrementalAuthorizationStatus.values[serialized[8] as int] : null,
     last4: serialized[9] as String?,
     networks: serialized[10] != null ? _$deserializeCardNetworks(serialized[10] as List) : null,
-    receipt: serialized[11] != null ? _$deserializeReceiptDetails(serialized[11] as List) : null);
+    receipt: serialized[11] != null ? _$deserializeReceiptDetails(serialized[11] as List) : null,
+    captureBefore:
+        serialized[12] != null ? DateTime.fromMillisecondsSinceEpoch(serialized[12] as int) : null,
+    reauthorizeBefore:
+        serialized[13] != null ? DateTime.fromMillisecondsSinceEpoch(serialized[13] as int) : null);
 List<Object?> _$serializeCardPresentParameters(CardPresentParameters deserialized) => [
       deserialized.captureMethod?.index,
       deserialized.requestExtendedAuthorization,
       deserialized.requestIncrementalAuthorizationSupport,
-      deserialized.requestedPriority?.index
+      deserialized.requestedPriority?.index,
+      deserialized.requestMulticapture,
+      deserialized.requestReauthorization,
     ];
 List<Object?> _$serializeCart(Cart deserialized) => [
       deserialized.currency,
@@ -599,9 +622,7 @@ List<Object?> _$serializeTapToPayConnectionConfiguration(
       'TapToPayConnectionConfiguration',
       deserialized.autoReconnectOnUnexpectedDisconnect,
       deserialized.locationId,
-      deserialized.merchantDisplayName,
       deserialized.onBehalfOf,
-      deserialized.tosAcceptancePermitted
     ];
 List<Object?> _$serializeUsbConnectionConfiguration(UsbConnectionConfiguration deserialized) => [
       'UsbConnectionConfiguration',
@@ -816,7 +837,8 @@ List<Object?> _$serializeSimulatedCard(SimulatedCard deserialized) =>
 List<Object?> _$serializeSimulatorConfiguration(SimulatorConfiguration deserialized) => [
       _$serializeSimulatedCard(deserialized.simulatedCard),
       deserialized.simulatedTipAmount,
-      deserialized.update.index
+      deserialized.update.index,
+      deserialized.offlineMode?.index,
     ];
 List<Object?> _$serializeTapToPayUxConfiguration(TapToPayUxConfiguration deserialized) => [
       deserialized.colors != null
@@ -846,7 +868,8 @@ TerminalException _$deserializeTerminalException(List<Object?> serialized) => Te
     code: TerminalExceptionCode.values[serialized[1] as int],
     message: serialized[2] as String,
     paymentIntent: serialized[3] != null ? _$deserializePaymentIntent(serialized[3] as List) : null,
-    stackTrace: serialized[4] as String?);
+    stackTrace: serialized[4] as String?,
+    refund: serialized[5] != null ? _$deserializeRefund(serialized[5] as List) : null);
 Tip _$deserializeTip(List<Object?> serialized) => Tip(amount: serialized[0] as int?);
 List<Object?> _$serializeTippingConfiguration(TippingConfiguration deserialized) =>
     [deserialized.eligibleAmount];

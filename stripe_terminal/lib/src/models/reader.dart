@@ -16,6 +16,9 @@ enum ConnectionStatus {
   connecting,
 
   discovering,
+
+  /// The SDK is attempting to reconnect to a reader after an unexpected disconnect.
+  reconnecting,
 }
 
 /// Information about a card reader that has been discovered by or connected to the SDK.

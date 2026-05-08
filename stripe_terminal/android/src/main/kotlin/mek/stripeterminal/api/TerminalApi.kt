@@ -127,6 +127,7 @@ interface TerminalPlatformApi {
         shouldUpdatePaymentIntent: Boolean,
         customerCancellationEnabled: Boolean,
         allowRedisplay: AllowRedisplayApi,
+        skipDonation: Boolean,
     )
 
     fun onStopCollectPaymentMethod(
@@ -233,6 +234,10 @@ interface TerminalPlatformApi {
         configuration: TapToPayUxConfigurationApi,
     )
 
+    fun onIsTapToPayAccountLinked(
+        result: Result<Boolean>,
+    )
+
     private fun onMethodCall(
         call: MethodCall,
         result: MethodChannel.Result,
@@ -312,7 +317,7 @@ interface TerminalPlatformApi {
                 }
                 "startCollectPaymentMethod" -> {
                     val res = Result<PaymentIntentApi>(result) { it.serialize() }
-                    onStartCollectPaymentMethod(res, (args[0] as Number).toLong(), args[1] as String, args[2] as Boolean, args[3] as String?, args[4] as Boolean, (args[5] as List<Any?>?)?.let { TippingConfigurationApi.deserialize(it) }, args[6] as Boolean, args[7] as Boolean, (args[8] as Int).let { AllowRedisplayApi.values()[it] })
+                    onStartCollectPaymentMethod(res, (args[0] as Number).toLong(), args[1] as String, args[2] as Boolean, args[3] as String?, args[4] as Boolean, (args[5] as List<Any?>?)?.let { TippingConfigurationApi.deserialize(it) }, args[6] as Boolean, args[7] as Boolean, (args[8] as Int).let { AllowRedisplayApi.values()[it] }, args[9] as Boolean)
                 }
                 "stopCollectPaymentMethod" -> {
                     val res = Result<Unit>(result) { null }
@@ -385,6 +390,10 @@ interface TerminalPlatformApi {
                 "setTapToPayUXConfiguration" -> {
                     onSetTapToPayUXConfiguration((args[0] as List<Any?>).let { TapToPayUxConfigurationApi.deserialize(it) })
                     result.success(null)
+                }
+                "isTapToPayAccountLinked" -> {
+                    val res = Result<Boolean>(result) { it }
+                    onIsTapToPayAccountLinked(res)
                 }
             }
         } catch (e: PlatformError) {
@@ -580,10 +589,28 @@ enum class AllowRedisplayApi {
 
 data class AmountDetailsApi(
     val tip: TipApi?,
+    val surchargeDetails: SurchargeDetailsApi?,
 ) {
     fun serialize(): List<Any?> {
         return listOf(
             tip?.serialize(),
+            surchargeDetails?.serialize(),
+        )
+    }
+}
+
+enum class SurchargeStatusApi {
+    APPLIED, CUSTOMER_OPTED_OUT, DECLINED, ERROR;
+}
+
+data class SurchargeDetailsApi(
+    val surchargeAmount: Long,
+    val status: SurchargeStatusApi,
+) {
+    fun serialize(): List<Any?> {
+        return listOf(
+            surchargeAmount,
+            status.ordinal,
         )
     }
 }
@@ -653,6 +680,8 @@ data class CardPresentDetailsApi(
     val last4: String?,
     val networks: CardNetworksApi?,
     val receipt: ReceiptDetailsApi?,
+    val captureBefore: Long?,
+    val reauthorizeBefore: Long?,
 ) {
     fun serialize(): List<Any?> {
         return listOf(
@@ -668,6 +697,8 @@ data class CardPresentDetailsApi(
             last4,
             networks?.serialize(),
             receipt?.serialize(),
+            captureBefore,
+            reauthorizeBefore,
         )
     }
 }
@@ -677,6 +708,8 @@ data class CardPresentParametersApi(
     val requestExtendedAuthorization: Boolean?,
     val requestIncrementalAuthorizationSupport: Boolean?,
     val requestedPriority: CardPresentRoutingApi?,
+    val requestMulticapture: Boolean?,
+    val requestReauthorization: Boolean?,
 ) {
     companion object {
         fun deserialize(
@@ -687,6 +720,8 @@ data class CardPresentParametersApi(
                 requestExtendedAuthorization = serialized[1] as Boolean?,
                 requestIncrementalAuthorizationSupport = serialized[2] as Boolean?,
                 requestedPriority = (serialized[3] as Int?)?.let { CardPresentRoutingApi.values()[it] },
+                requestMulticapture = serialized[4] as Boolean?,
+                requestReauthorization = serialized[5] as Boolean?,
             )
         }
     }
@@ -831,9 +866,7 @@ data class InternetConnectionConfigurationApi(
 data class TapToPayConnectionConfigurationApi(
     val autoReconnectOnUnexpectedDisconnect: Boolean,
     val locationId: String,
-    val merchantDisplayName: String?,
     val onBehalfOf: String?,
-    val tosAcceptancePermitted: Boolean,
 ): ConnectionConfigurationApi() {
     companion object {
         fun deserialize(
@@ -842,9 +875,7 @@ data class TapToPayConnectionConfigurationApi(
             return TapToPayConnectionConfigurationApi(
                 autoReconnectOnUnexpectedDisconnect = serialized[0] as Boolean,
                 locationId = serialized[1] as String,
-                merchantDisplayName = serialized[2] as String?,
-                onBehalfOf = serialized[3] as String?,
-                tosAcceptancePermitted = serialized[4] as Boolean,
+                onBehalfOf = serialized[2] as String?,
             )
         }
     }
@@ -867,7 +898,7 @@ data class UsbConnectionConfigurationApi(
 }
 
 enum class ConnectionStatusApi {
-    NOT_CONNECTED, CONNECTED, CONNECTING, DISCOVERING;
+    NOT_CONNECTED, CONNECTED, CONNECTING, DISCOVERING, RECONNECTING;
 }
 
 enum class DeviceTypeApi {
@@ -1124,7 +1155,7 @@ data class PaymentIntentParametersApi(
 }
 
 enum class PaymentIntentStatusApi {
-    CANCELED, PROCESSING, REQUIRES_CAPTURE, REQUIRES_CONFIRMATION, REQUIRES_PAYMENT_METHOD, REQUIRES_ACTION, SUCCEEDED;
+    CANCELED, PROCESSING, REQUIRES_CAPTURE, REQUIRES_CONFIRMATION, REQUIRES_PAYMENT_METHOD, REQUIRES_ACTION, REQUIRES_REAUTHORIZATION, SUCCEEDED;
 }
 
 enum class PaymentIntentUsageApi {
@@ -1469,10 +1500,15 @@ enum class SimulatedCardTypeApi {
     VISA, VISA_DEBIT, VISA_US_COMMON_DEBIT, MASTERCARD, MASTER_DEBIT, MASTERCARD_PREPAID, AMEX, AMEX2, DISCOVER, DISCOVER2, DINERS, DINERS14_DIGIT, JBC, UNION_PAY, INTERAC, EFTPOS_AU_DEBIT, EFTPOS_AU_VISA_DEBIT, EFTPOS_AU_DEBIT_MASTERCARD, CHARGE_DECLINED, CHARGE_DECLINED_INSUFFICIENT_FUNDS, CHARGE_DECLINED_LOST_CARD, CHARGE_DECLINED_STOLEN_CARD, CHARGE_DECLINED_EXPIRED_CARD, CHARGE_DECLINED_PROCESSING_ERROR, ONLINE_PIN_CVM, ONLINE_PIN_SCA_RETRY, OFFLINE_PIN_CVM, OFFLINE_PIN_SCA_RETRY;
 }
 
+enum class SimulatedOfflineModeApi {
+    NONE, PAYMENT_INTENT_OFFLINE, BOTH;
+}
+
 data class SimulatorConfigurationApi(
     val simulatedCard: SimulatedCardApi,
     val simulatedTipAmount: Long?,
     val update: SimulateReaderUpdateApi,
+    val offlineMode: SimulatedOfflineModeApi?,
 ) {
     companion object {
         fun deserialize(
@@ -1482,6 +1518,7 @@ data class SimulatorConfigurationApi(
                 simulatedCard = (serialized[0] as List<Any?>).let { SimulatedCardApi.deserialize(it) },
                 simulatedTipAmount = (serialized[1] as? Number)?.toLong(),
                 update = (serialized[2] as Int).let { SimulateReaderUpdateApi.values()[it] },
+                offlineMode = (serialized[3] as Int?)?.let { SimulatedOfflineModeApi.values()[it] },
             )
         }
     }
@@ -1569,6 +1606,7 @@ data class TerminalExceptionApi(
     val message: String,
     val paymentIntent: PaymentIntentApi?,
     val stackTrace: String?,
+    val refund: RefundApi?,
 ) {
     fun serialize(): List<Any?> {
         return listOf(
@@ -1577,6 +1615,7 @@ data class TerminalExceptionApi(
             message,
             paymentIntent?.serialize(),
             stackTrace,
+            refund?.serialize(),
         )
     }
 }

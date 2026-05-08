@@ -269,5 +269,6 @@ fun ConnectionStatus.toApi(): ConnectionStatusApi {
         ConnectionStatus.CONNECTING -> ConnectionStatusApi.CONNECTING
         ConnectionStatus.CONNECTED -> ConnectionStatusApi.CONNECTED
         ConnectionStatus.DISCOVERING -> ConnectionStatusApi.DISCOVERING
+        ConnectionStatus.RECONNECTING -> ConnectionStatusApi.RECONNECTING
     }
 }

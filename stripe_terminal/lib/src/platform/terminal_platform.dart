@@ -99,6 +99,7 @@ abstract class TerminalPlatform {
     required bool shouldUpdatePaymentIntent,
     required bool customerCancellationEnabled,
     required AllowRedisplay allowRedisplay,
+    required bool skipDonation,
   });
 
   Future<void> stopCollectPaymentMethod(int operationId);
@@ -172,6 +173,8 @@ abstract class TerminalPlatform {
 
   @MethodApi(kotlin: MethodApiType.sync, swift: MethodApiType.sync)
   Future<void> setTapToPayUXConfiguration(TapToPayUxConfiguration configuration);
+
+  Future<bool> isTapToPayAccountLinked();
 //endregion
 
   // TODO: add support to collectData and setLocalMobileUxConfiguration methods

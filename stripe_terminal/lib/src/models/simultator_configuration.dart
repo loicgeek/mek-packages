@@ -18,11 +18,27 @@ class SimulatorConfiguration {
   /// Set this to simulate a [Terminal] configuration object with this fixed tip amount for all currencies.
   final int? simulatedTipAmount;
 
+  /// The offline mode to simulate. If null, no offline behavior is simulated.
+  final SimulatedOfflineMode? offlineMode;
+
   const SimulatorConfiguration({
     this.update = SimulateReaderUpdate.available,
     this.simulatedCard = const SimulatedCard.fromType(SimulatedCardType.visa),
     this.simulatedTipAmount,
+    this.offlineMode,
   });
+}
+
+/// Enum used to simulate offline behavior during testing.
+enum SimulatedOfflineMode {
+  /// No offline simulation.
+  none,
+
+  /// Payment intents are stored offline and forwarded when online.
+  paymentIntentOffline,
+
+  /// Both payment intents and the reader behave as if offline.
+  both,
 }
 
 /// Enum used to simulate various types of reader updates being available for a simulated bluetooth

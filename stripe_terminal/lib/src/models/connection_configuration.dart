@@ -46,16 +46,7 @@ class InternetConnectionConfiguration extends ConnectionConfiguration {
 class TapToPayConnectionConfiguration extends ConnectionConfiguration {
   final String locationId;
   final bool autoReconnectOnUnexpectedDisconnect;
-
-  /// Whether the Terms of Service acceptance is permitted during connection.
-  /// Set to false to prevent ToS from showing up when connecting in the background.
-  /// If a user has not yet accepted the ToS and this is false, the connection will fail.
-  final bool tosAcceptancePermitted;
-
   final String? onBehalfOf;
-
-  final String? merchantDisplayName;
-
   @override
   @SerializableParam.ignore()
   final TapToPayReaderDelegate? readerDelegate;
@@ -63,9 +54,7 @@ class TapToPayConnectionConfiguration extends ConnectionConfiguration {
   const TapToPayConnectionConfiguration({
     required this.locationId,
     this.autoReconnectOnUnexpectedDisconnect = true,
-    this.tosAcceptancePermitted = true,
     this.onBehalfOf,
-    this.merchantDisplayName,
     required this.readerDelegate,
   });
 }

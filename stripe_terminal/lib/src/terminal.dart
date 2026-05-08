@@ -276,6 +276,7 @@ class Terminal {
     bool shouldUpdatePaymentIntent = false,
     bool customerCancellationEnabled = false,
     AllowRedisplay allowRedisplay = AllowRedisplay.unspecified,
+    bool skipDonation = false,
   }) {
     return CancelableFuture(_platform.stopCollectPaymentMethod, (id) async {
       return await _platform.startCollectPaymentMethod(
@@ -288,6 +289,7 @@ class Terminal {
         shouldUpdatePaymentIntent: shouldUpdatePaymentIntent,
         customerCancellationEnabled: customerCancellationEnabled,
         allowRedisplay: allowRedisplay,
+        skipDonation: skipDonation,
       );
     });
   }
@@ -526,6 +528,11 @@ class Terminal {
   /// Configure Tap to Pay UX
   Future<void> setTapToPayUXConfiguration(TapToPayUxConfiguration configuration) async =>
       await _platform.setTapToPayUXConfiguration(configuration);
+
+  /// Returns whether the Tap to Pay account is linked on iOS.
+  ///
+  /// Note: This method is only supported on iOS. On Android, it will throw an error.
+  Future<bool> isTapToPayAccountLinked() async => await _platform.isTapToPayAccountLinked();
 //endregion
 
   StreamController<T> _handleStream<T>(
