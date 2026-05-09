@@ -22,6 +22,7 @@ Future<void> generateApi({
   required SerializationCodec serializationCodec,
   required ClientCodec clientCodec,
   List<Plugin> plugins = const [],
+  String? partFolder,
   DartFormatter? formatter,
 }) async {
   final timer = DateTime.now();
@@ -89,6 +90,9 @@ Future<void> generateApi({
     }
   });
 
+  var partPath = '${path_.basenameWithoutExtension(apiFileName)}.g.dart';
+  if (partFolder != null) partPath = path_.join(partFolder, partPath);
+
   var librarySpec = Library(
     (b) => b
       ..ignoreForFile.addAll([
@@ -97,7 +101,7 @@ Future<void> generateApi({
         'always_use_package_imports',
         'cast_nullable_to_non_nullable',
       ])
-      ..directives.add(Directive.part('${path_.basenameWithoutExtension(apiFileName)}.g.dart'))
+      ..directives.add(Directive.part(partPath))
       ..body.add(apiSpec)
       ..body.addAll(dataSpecs),
   );

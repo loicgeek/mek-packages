@@ -142,6 +142,7 @@ SchemaOpenApi _$SchemaOpenApiFromJson(Map json) => $checkedCreate(
               Map<dynamic, dynamic>,
               RefOr<SchemaOpenApi>
             >(v, const RefOrSchemaJsonConverter().fromJson),
+        readValue: SchemaOpenApi._readAdditionalProperties,
       ),
       allOf: $checkedConvert(
         'allOf',

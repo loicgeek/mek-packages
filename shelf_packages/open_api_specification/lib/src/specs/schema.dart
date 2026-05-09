@@ -107,6 +107,7 @@ class SchemaOpenApi extends OriginalJson implements RefOr<SchemaOpenApi> {
   final Map<String, RefOr<SchemaOpenApi>>? properties;
 
   /// With [TypeOpenApi.object]. It define a Map<String, *>
+  @JsonKey(readValue: _readAdditionalProperties)
   final RefOr<SchemaOpenApi>? additionalProperties;
 
   final List<RefOr<SchemaOpenApi>>? allOf;
@@ -169,6 +170,14 @@ class SchemaOpenApi extends OriginalJson implements RefOr<SchemaOpenApi> {
 
   @override
   SchemaOpenApi resolve(ComponentsOpenApi components) => this;
+
+  static Object? _readAdditionalProperties(Map<dynamic, dynamic> data, String key) {
+    final value = data[key];
+    return switch (value) {
+      bool() => null,
+      _ => value,
+    };
+  }
 
   factory SchemaOpenApi.fromJson(Map<dynamic, dynamic> map) =>
       _$SchemaOpenApiFromJson(OriginalJson.wrap(map));

@@ -1,3 +1,6 @@
+## 3.0.1
+- fix: added support to `bool` value for `SchemaOpenApi.additionalProperties` field
+
 ## 3.0.0
 - feat: added support a ref to `ParameterOpenApi.schema`
 
