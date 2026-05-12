@@ -24,7 +24,7 @@ extension PaymentIntent {
             id: stripeId!,
             invoiceId: nil,
             metadata: metadata ?? [:],
-            onBehalfOf: nil,
+            onBehalfOf: onBehalfOf,
             paymentMethod: paymentMethod?.toApi(),
             paymentMethodId: paymentMethodId,
             receiptEmail: nil,
