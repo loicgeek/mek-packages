@@ -1,4 +1,6 @@
 
+## 4.7.3
+- feat: bumped android and ios sdk version to `4.7.3`
 
 ## 4.6.3
 - fix: deleted a trailing comma that was causing a compilation error on  Xcode versions priors to 16.3
