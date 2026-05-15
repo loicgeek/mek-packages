@@ -89,6 +89,10 @@ fun DeviceType.toApi(): DeviceTypeApi? {
         DeviceType.VERIFONE_UX700 -> DeviceTypeApi.VERIFONE_UX700
         DeviceType.VERIFONE_V660P_DEVKIT -> DeviceTypeApi.VERIFONE_V660P_DEVKIT
         DeviceType.VERIFONE_UX700_DEVKIT -> DeviceTypeApi.VERIFONE_UX700_DEVKIT
+        DeviceType.STRIPE_T600 -> DeviceTypeApi.STRIPE_T600
+        DeviceType.STRIPE_T600_DEVKIT -> DeviceTypeApi.STRIPE_T600_DEVKIT
+        DeviceType.STRIPE_T610 -> DeviceTypeApi.STRIPE_T610
+        DeviceType.STRIPE_T610_DEVKIT -> DeviceTypeApi.STRIPE_T610_DEVKIT
         DeviceType.UNKNOWN -> null
     }
 }
