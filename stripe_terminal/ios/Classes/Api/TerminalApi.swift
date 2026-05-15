@@ -936,6 +936,10 @@ enum DeviceTypeApi: Int {
     case verifoneUx700
     case verifoneV660pDevkit
     case verifoneUx700Devkit
+    case stripeT600
+    case stripeT600Devkit
+    case stripeT610
+    case stripeT610Devkit
 }
 
 enum DisconnectReasonApi: Int {
@@ -949,6 +953,7 @@ enum DisconnectReasonApi: Int {
     case usbDisconnected
     case idlePowerDown
     case bluetoothSignalLost
+    case bluetoothPeerRemovedPairingInformation
 }
 
 protocol DiscoveryConfigurationApi {}
@@ -1864,6 +1869,7 @@ enum TerminalExceptionCodeApi: Int {
     case surchargeNoticeRequiresUpdatePaymentIntent
     case surchargeUnavailableWithDynamicCurrencyConversion
     case tapToPayUnsupportedProcessor
+    case invalidMotoConfiguration
 }
 
 struct TipApi {
